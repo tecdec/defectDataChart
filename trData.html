@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+	  <script src="http://www.chartjs.org/assets/Chart.min.js"></script>
+	  <script src="http://www.nihilogic.dk/labs/canvas2image/canvas2image.js"></script>
+
+	  <meta charset="utf-8">
+	  
+
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2015 by nnnick (http://jsbin.com/gumul/2/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+  <title>Defect Trend Chart</title>
+
+<style id="jsbin-css">
+#canvas-holder{
+        width:240px;
+      }
+
+.line-legend li span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  float: left;
+  margin-top: 4px;
+  margin-right: 8px;
+}
+
+.line-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  margin-top : 20px;
+
+}
+
+.line-legend li {
+  margin-bottom : 4px;
+}
+
+.line-legend li:first-letter {
+  text-transform: capitalize;
+}
+
+.comm-how {
+  display: inline-block;
+  float : left;
+  color : #979797;
+  width : 25px;
+  text-align: right;
+  margin-right : 10px;
+}
+
+</style>
+</head>
+<body>
+  
+  <div class="centered comm-center">
+	  <div id="chart">
+		<div id="canvas-holder">
+			<canvas id="chart-area" width="500" height="500"></canvas>
+		</div>
+		<div id="my-line-legend">
+		</div> 
+			<image id="theimage"></image>
+	  </div>
+  </div>
+
+
+  <script>
+  
+  
+  "use strict;"
+	function getTrDataArray() {
+		"use strict";
+		var trCountArray = [5, 20, 7, 6, 12, 6, 7, 8, 9, 10, 13, 11, 12, 6, 7];
+		return trCountArray;
+	}
+	function getTrGoalLimit() {
+		"use strict";
+		var trGoalLimit = 20;
+		var i = 0;
+		var randomScalingFactor = function () { return Math.round(Math.random() * 100); };
+		//var rx = Math.round(randomScalingFactor * trGoalLimit);
+		var trLimitArray = [];
+		for (i = 0; i < getTrDataArray().length; i++) {
+			//trLimitArray.push(trLimitArray[i] *3 );
+			trLimitArray.push(Math.round(Math.random() * 100));
+
+		}	
+		return trLimitArray;
+	}
+	function to_image(){
+                var canvas = document.getElementById("chart-area");
+                document.getElementById("theimage").src = canvas.toDataURL();
+                Canvas2Image.saveAsPNG(canvas);
+    }
+	// **** Main ****//
+	var lineChartData = {
+			labels : ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+			datasets : [
+				{
+					label: "Blue: PLM TRs",
+					fillColor : "rgba(220,220,220,0.2)",
+					strokeColor : "rgba(0,0,255,1)",
+					pointColor : "rgba(220,220,220,1)",
+					pointStrokeColor : "#fff",
+					pointHighlightFill : "#fff",
+					pointHighlightStroke : "rgba(220,220,220,1)",
+					//data : [randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()]
+					data : getTrDataArray() //[1,2,3,4,5,6,7,8,9,10]
+				},
+				{
+					label: "Green: ENM Main Track TRs",
+					fillColor : "rgba(151,187,205,0.2)",
+					strokeColor : "rgba(0,255,0,1)",
+					pointColor : "rgba(151,187,205,1)",
+					pointStrokeColor : "#fff",
+					pointHighlightFill : "#fff",
+					pointHighlightStroke : "rgba(151,187,205,1)",
+					data :  [20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+				},
+				{
+					label: "Red: Classic Main Track TR",
+					fillColor : "rgba(151,187,205,0.2)",
+					strokeColor : "rgba(255,0,0,6)",
+					pointColor : "rgba(151,187,205,1)",
+					pointStrokeColor : "#fff",
+					pointHighlightFill : "#fff",
+					pointHighlightStroke : "rgba(151,187,205,1)",
+					data : getTrGoalLimit() //[20,10,0,20,0,10,20,30,20,20]
+				}
+			]
+
+		};
+
+
+
+        window.onload = function () {
+		"use strict";
+		var canvas = document.getElementById("chart-area");
+        var ctx = document.getElementById("chart-area").getContext("2d");
+        window.myLine = new Chart(ctx).Line(lineChartData, {
+            responsive : true,
+            //tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>%",
+            //segmentStrokeColor : "#f9f9f9",
+            legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><div class=\"comm-how\"><%=datasets[i].value%>-</div><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+        });
+		        var legendHolder = document.getElementById('my-line-legend');
+				legendHolder.innerHTML = myLine.generateLegend();
+
+
+/*
+        var helpers = Chart.helpers;
+		// Include a html legend template after the module line itself
+		helpers.each(legendHolder.firstChild.childNodes, function(legendNode, index){
+          helpers.addEvent(legendNode, 'mouseover', function(){
+              var activeDataset = myLine.datasets[index];
+			  
+              activeDataset.save();
+              activeDataset.fillColor = activeDataset.highlightColor;
+              myLine.showTooltip([activeDataset]);
+              activeDataset.restore();
+          });
+      });
+	  
+      helpers.addEvent(legendHolder.firstChild, 'mouseout', function(){
+          myLine.draw();
+      });
+	  */
+      //eeidle : canvas not defined error //
+	  canvas.parentNode.parentNode.appendChild(legendHolder.firstChild);
+          
+
+        //myLine.generateLegend();
+          //document.getElementById('my-line-legend').innerHTML = myLine.generateLegend();
+		//to_image();
+        };
+    </script>
+
+</body>
+</html>
+
+
+
